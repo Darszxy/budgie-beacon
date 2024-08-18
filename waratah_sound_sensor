@@ -1,1 +1,54 @@
+// Define the pin connected to the PIR motion sensor
+#define PIR_PIN 2
+
+// Define the pin connected to the microphone (sound sensor)
+#define MIC_PIN A0
+
+// Define the pin connected to the speaker or buzzer
+#define SPEAKER_PIN 3
+
+// Variables to store sensor data
+int pirState = LOW;
+int lastPirState = LOW;
+int soundLevel = 0;
+
+void setup() {
+  // Initialize the PIR motion sensor pin as input
+  pinMode(PIR_PIN, INPUT);
+
+  // Initialize the speaker pin as output
+  pinMode(SPEAKER_PIN, OUTPUT);
+
+  // Begin serial communication for debugging (optional)
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Read the motion sensor
+  pirState = digitalRead(PIR_PIN);
+
+  // If motion is detected, activate the microphone and speaker
+  if (pirState == HIGH && lastPirState == LOW) {
+    Serial.println("Motion detected!");
+    lastPirState = HIGH;
+
+    // Read the sound level from the microphone
+    soundLevel = analogRead(MIC_PIN);
+
+    // Play a sound or activate the speaker if a certain sound level is detected
+    if (soundLevel > 500) { // Adjust the threshold as needed
+      Serial.println("Sound detected!");
+      tone(SPEAKER_PIN, 1000); // Play a 1kHz tone on the speaker
+      delay(500);              // Play sound for 500ms
+      noTone(SPEAKER_PIN);     // Stop the tone
+    }
+  } 
+  // If no motion is detected, reset the state
+  else if (pirState == LOW && lastPirState == HIGH) {
+    Serial.println("Motion ended!");
+    lastPirState = LOW;
+  }
+
+  delay(100); // Small delay for sensor stability
+}
 
