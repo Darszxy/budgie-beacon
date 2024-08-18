@@ -1,1 +1,61 @@
+#include <Adafruit_NeoPixel.h>
+
+// Define the pin connected to the NeoPixel strip
+#define NEOPIXEL_PIN 6
+#define NUM_PIXELS 16 // Number of NeoPixels in the strip
+
+// Define the pin connected to the PIR motion sensor
+#define PIR_PIN 2
+
+// Define the pin connected to the light sensor (LDR or analog light sensor)
+#define LIGHT_SENSOR_PIN A0
+
+// Create a NeoPixel object
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(NUM_PIXELS, NEOPIXEL_PIN, NEO_GRB + NEO_KHZ800);
+
+// Variables to store sensor data
+int lightLevel = 0;
+int pirState = LOW;
+int lastPirState = LOW;
+
+void setup() {
+  // Initialize the NeoPixel strip
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
+
+  // Initialize the PIR motion sensor pin as input
+  pinMode(PIR_PIN, INPUT);
+
+  // Begin serial communication for debugging (optional)
+  Serial.begin(9600);
+}
+
+void loop() {
+  // Read the motion sensor
+  pirState = digitalRead(PIR_PIN);
+
+  // Read the light level from the light sensor
+  lightLevel = analogRead(LIGHT_SENSOR_PIN);
+
+  // Adjust the brightness based on the light level (invert light level so more light = dimmer LEDs)
+  int brightness = map(lightLevel, 0, 1023, 255, 0);
+
+  // If motion is detected, light up the NeoPixels
+  if (pirState == HIGH && lastPirState == LOW) {
+    Serial.println("Motion detected!");
+    strip.setBrightness(brightness);
+    for (int i = 0; i < NUM_PIXELS; i++) {
+      strip.setPixelColor(i, strip.Color(255, 255, 255)); // Set the NeoPixel color to white
+    }
+    strip.show();
+    lastPirState = HIGH;
+  } else if (pirState == LOW && lastPirState == HIGH) {
+    Serial.println("Motion ended!");
+    strip.clear(); // Turn off all pixels
+    strip.show();
+    lastPirState = LOW;
+  }
+
+  delay(50); // Small delay for sensor stability
+}
 
