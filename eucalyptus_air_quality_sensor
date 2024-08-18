@@ -1,1 +1,66 @@
+#include <DHT.h>
+
+// Define the analog pin connected to the air quality sensor
+const int airQualityPin = 0; // ATTiny1604 ADC0
+
+// Define the pin connected to the DHT sensor (e.g., DHT11 or DHT22)
+#define DHTPIN 1  // ATTiny1604 pin for DHT sensor
+
+// Define the DHT sensor type
+#define DHTTYPE DHT11  // or DHT22, depending on your sensor
+
+DHT dht(DHTPIN, DHTTYPE);
+
+// Variable to store sensor data
+int airQualityValue = 0;
+float temperature = 0.0;
+float humidity = 0.0;
+
+void setup() {
+  // Initialize serial communication
+  Serial.begin(9600);
+
+  // Initialize the DHT sensor
+  dht.begin();
+
+  // Configure the air quality pin as input
+  pinMode(airQualityPin, INPUT);
+}
+
+void loop() {
+  // Read the analog value from the air quality sensor
+  airQualityValue = analogRead(airQualityPin);
+
+  // Read temperature and humidity from the DHT sensor
+  temperature = dht.readTemperature();
+  humidity = dht.readHumidity();
+
+  // Check if any reads failed (returns NaN)
+  if (isnan(temperature) || isnan(humidity)) {
+    Serial.println("Failed to read from DHT sensor!");
+    return;
+  }
+
+  // Output the air quality, temperature, and humidity values
+  Serial.print("Air Quality Sensor Value: ");
+  Serial.println(airQualityValue);
+
+  Serial.print("Temperature: ");
+  Serial.print(temperature);
+  Serial.println(" °C");
+
+  Serial.print("Humidity: ");
+  Serial.print(humidity);
+  Serial.println(" %");
+
+  // Simple air quality interpretation
+  if (airQualityValue < 400) {  // Threshold value example
+    Serial.println("Air Quality: Good");
+  } else {
+    Serial.println("Air Quality: Bad");
+  }
+
+  // Add a delay to control the frequency of readings
+  delay(2000);  // 2-second delay between readings
+}
 
